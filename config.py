@@ -1,36 +1,32 @@
 """
-config.py — Jugs's v3 Config
-Dataclass-based, persistent, clean.
+config.py — Jugs's v3.1 Final Config
+Toggle-only, no hold keys.
 """
 import json
 import os
 from dataclasses import dataclass, asdict, field
-from typing import List, Tuple
+from typing import List
 
 
 @dataclass
 class ColorConfig:
-    """HSV ranges for purple enemy outline detection."""
     lower_hsv: List[int] = field(default_factory=lambda: [130, 60, 180])
     upper_hsv: List[int] = field(default_factory=lambda: [170, 255, 255])
-    mode: str = "hsv"  # "hsv" or "rgb"
+    mode: str = "hsv"
 
 
 @dataclass
 class DetectionConfig:
-    """Detection filtering parameters."""
     min_contour_area: int = 25
     max_contour_area: int = 6000
     threshold: float = 0.5
-    min_aspect: float = 0.4  # Height/width ratio minimum
+    min_aspect: float = 0.35
 
 
 @dataclass
 class AimbotConfig:
-    """Aimbot lock-on settings. Does NOT shoot."""
     enabled: bool = False
     toggle_key: str = "f2"
-    hold_key: str = "alt"
     fov: int = 140
     smooth: float = 4.0
     strength: float = 0.35
@@ -41,10 +37,8 @@ class AimbotConfig:
 
 @dataclass
 class TriggerbotConfig:
-    """Triggerbot tap settings. Sniper/guardian only."""
     enabled: bool = False
     toggle_key: str = "f5"
-    hold_key: str = "shift"
     delay_min_ms: int = 55
     delay_max_ms: int = 130
     pixel_check: int = 4
@@ -55,7 +49,6 @@ class TriggerbotConfig:
 
 @dataclass
 class UIConfig:
-    """UI appearance settings."""
     theme: str = "dark"
     opacity: float = 0.92
     show_fps: bool = True
@@ -63,7 +56,6 @@ class UIConfig:
 
 @dataclass
 class AppConfig:
-    """Root configuration container."""
     color: ColorConfig = field(default_factory=ColorConfig)
     detection: DetectionConfig = field(default_factory=DetectionConfig)
     aimbot: AimbotConfig = field(default_factory=AimbotConfig)
@@ -77,15 +69,11 @@ CONFIG_PATH = "jugs_config_v3.json"
 
 
 def load_config(path: str = CONFIG_PATH) -> AppConfig:
-    """Load config from JSON or return defaults."""
     if not os.path.exists(path):
         return AppConfig()
-    
     try:
         with open(path, "r") as f:
             data = json.load(f)
-        
-        # Rebuild nested dataclasses from dict
         return AppConfig(
             color=ColorConfig(**data.get("color", {})),
             detection=DetectionConfig(**data.get("detection", {})),
@@ -101,7 +89,6 @@ def load_config(path: str = CONFIG_PATH) -> AppConfig:
 
 
 def save_config(cfg: AppConfig, path: str = CONFIG_PATH) -> None:
-    """Save config to JSON."""
     data = {
         "color": asdict(cfg.color),
         "detection": asdict(cfg.detection),
@@ -115,6 +102,4 @@ def save_config(cfg: AppConfig, path: str = CONFIG_PATH) -> None:
         json.dump(data, f, indent=2)
 
 
-# Global singleton
 CFG = load_config()
-
